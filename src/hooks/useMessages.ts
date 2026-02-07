@@ -47,6 +47,7 @@ export function useMessages({ clientUsername, currentUser, autoMarkSeen = false 
           newMessages.push({
             id: docSnap.id,
             ...docSnap.data(),
+            seenBy: docSnap.data().seenBy || [],
           } as Message);
         });
         setMessages(newMessages);
@@ -55,7 +56,7 @@ export function useMessages({ clientUsername, currentUser, autoMarkSeen = false 
         // Auto-mark messages as seen for support role
         if (autoMarkSeen) {
           newMessages.forEach((msg) => {
-            if (!msg.seenBy.includes(currentUser) && msg.user !== currentUser) {
+            if (!(msg.seenBy || []).includes(currentUser) && msg.user !== currentUser) {
               const msgRef = doc(db, 'chats', clientUsername, 'messages', msg.id);
               updateDoc(msgRef, {
                 seenBy: arrayUnion(currentUser),
