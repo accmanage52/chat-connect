@@ -1,25 +1,16 @@
-import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
-// Firebase configuration - to be provided by user
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDNmHeVVpBdsAjhlSF2F7Au6x2A5-wRfJI",
+  authDomain: "client-chat-support.firebaseapp.com",
+  projectId: "client-chat-support",
+  storageBucket: "client-chat-support.firebasestorage.app",
+  messagingSenderId: "84411906042",
+  appId: "1:84411906042:web:d1b211260fe58b3bf91643"
 };
 
-let app: FirebaseApp;
-let db: Firestore;
-
-try {
-  app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-} catch (error) {
-  console.error('Firebase initialization error:', error);
-  throw error;
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export { app, db };
