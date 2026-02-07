@@ -6,10 +6,10 @@ import {
   onSnapshot,
   addDoc,
   updateDoc,
+  setDoc,
   doc,
   Timestamp,
   arrayUnion,
-  limit,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Message } from '@/types/chat';
@@ -43,10 +43,10 @@ export function useMessages({ clientUsername, currentUser, autoMarkSeen = false 
       q,
       (snapshot) => {
         const newMessages: Message[] = [];
-        snapshot.forEach((doc) => {
+        snapshot.forEach((docSnap) => {
           newMessages.push({
-            id: doc.id,
-            ...doc.data(),
+            id: docSnap.id,
+            ...docSnap.data(),
           } as Message);
         });
         setMessages(newMessages);
@@ -84,6 +84,14 @@ export function useMessages({ clientUsername, currentUser, autoMarkSeen = false 
       if (!clientUsername || !text.trim()) return;
 
       try {
+        // Ensure parent chat document exists (for chat list discovery)
+        const chatDocRef = doc(db, 'chats', clientUsername);
+        await setDoc(chatDocRef, {
+          clientUsername,
+          updatedAt: Timestamp.now(),
+        }, { merge: true });
+
+        // Add the message
         const messagesRef = collection(db, 'chats', clientUsername, 'messages');
         await addDoc(messagesRef, {
           text: text.trim(),
