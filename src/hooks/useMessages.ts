@@ -37,7 +37,7 @@ export function useMessages({ clientUsername, currentUser, autoMarkSeen = false 
     setError(null);
 
     const messagesRef = collection(db, 'chats', clientUsername, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+    const q = query(messagesRef, orderBy('createdAt'));
 
     unsubscribeRef.current = onSnapshot(
       q,
