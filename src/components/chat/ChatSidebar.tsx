@@ -6,7 +6,6 @@ import { MessageSquare, LogOut, User, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-// ⭐ NEW IMPORTS (ONLY ADDITION)
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -19,7 +18,7 @@ export function ChatSidebar({ selectedChat, onSelectChat }: ChatSidebarProps) {
   const { user, logout } = useAuth();
   const { chats, loading } = useChatList({ currentUser: user?.username || '' });
 
-  // ⭐ NEW FUNCTION (CREATE CLIENT USER)
+  // ⭐ CREATE CLIENT USER
   const createClient = async () => {
     const username = prompt("Enter new client username");
     if (!username) return;
@@ -71,7 +70,7 @@ export function ChatSidebar({ selectedChat, onSelectChat }: ChatSidebarProps) {
           </div>
         </div>
 
-        {/* ⭐ RIGHT BUTTON GROUP (ADDED CREATE USER BUTTON) */}
+        {/* Right Buttons */}
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -93,7 +92,7 @@ export function ChatSidebar({ selectedChat, onSelectChat }: ChatSidebarProps) {
         </div>
       </div>
 
-      {/* Search placeholder */}
+      {/* Search */}
       <div className="p-3">
         <div className="bg-sidebar-hover rounded-lg px-4 py-2">
           <p className="text-sm text-sidebar-text-muted">Search or start new chat</p>
@@ -125,5 +124,70 @@ export function ChatSidebar({ selectedChat, onSelectChat }: ChatSidebarProps) {
         )}
       </div>
     </div>
+  );
+}
+
+/* ⭐ THIS COMPONENT WAS MISSING — THAT CAUSED THE ERROR */
+interface ChatListItemProps {
+  chat: ChatPreview;
+  isSelected: boolean;
+  onClick: () => void;
+  formatTime: (timestamp: any) => string;
+  currentUser: string;
+}
+
+function ChatListItem({ chat, isSelected, onClick, formatTime, currentUser }: ChatListItemProps) {
+  const getInitials = (name: string) => {
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const isOwnMessage = chat.lastMessage?.user === currentUser;
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'w-full p-3 flex items-center gap-3 transition-colors text-left',
+        isSelected ? 'bg-sidebar-active' : 'hover:bg-sidebar-hover'
+      )}
+    >
+      <div className="w-12 h-12 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
+        <span className="text-sm font-semibold text-sidebar-text">
+          {getInitials(chat.clientUsername)}
+        </span>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-medium text-sidebar-text truncate">
+            {chat.clientUsername}
+          </span>
+          {chat.lastMessage && (
+            <span className="text-xs text-sidebar-text-muted shrink-0 ml-2">
+              {formatTime(chat.lastMessage.createdAt)}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-sidebar-text-muted truncate pr-2">
+            {chat.lastMessage ? (
+              <>
+                {isOwnMessage && <span>You: </span>}
+                {chat.lastMessage.text}
+              </>
+            ) : (
+              'No messages yet'
+            )}
+          </p>
+
+          {chat.unreadCount > 0 && (
+            <span className="bg-unread-badge text-accent-foreground text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
+              {chat.unreadCount}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
   );
 }
