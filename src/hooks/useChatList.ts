@@ -44,7 +44,14 @@ export function useChatList({ currentUser }: UseChatListOptions) {
           const pathSegments = docSnap.ref.path.split('/');
           const clientUsername = pathSegments[1]; // Index 1 is the client username
 
-          const msg = { id: docSnap.id, ...docSnap.data() } as Message;
+          const data = docSnap.data();
+
+          const msg = {
+            id: docSnap.id,
+            ...data,
+            seenBy: data.seenBy || [], // ⭐ prevents ALL crashes forever
+          } as Message;
+
 
           if (!chatMap.has(clientUsername)) {
             chatMap.set(clientUsername, { messages: [], unreadCount: 0 });
@@ -54,7 +61,7 @@ export function useChatList({ currentUser }: UseChatListOptions) {
           chatData.messages.push(msg);
 
           // Count unread messages (not seen by current user, not sent by current user)
-          if (!msg.seenBy.includes(currentUser) && msg.user !== currentUser) {
+          if (!(msg.seenBy || []).includes(currentUser) && msg.user !== currentUser) {
             chatData.unreadCount++;
           }
         });
