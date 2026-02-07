@@ -21,12 +21,13 @@ export function ChatSidebar({ selectedChat, onSelectChat }: ChatSidebarProps) {
   // ⭐ CREATE CLIENT USER
   const createClient = async () => {
     const username = prompt("Enter new client username");
+    const password = prompt("Enter password");
     if (!username) return;
 
     try {
       await setDoc(doc(db, "users", username), {
         username,
-        password: "1234",
+        password,
         role: "client",
         createdAt: Timestamp.now(),
       });
