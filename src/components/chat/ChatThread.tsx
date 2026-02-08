@@ -1,9 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/context/AuthContext';
+import { useWatchPresence } from '@/hooks/usePresence';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
-import { User, Phone, Video, MoreVertical, Loader2 } from 'lucide-react';
+import { TypingIndicator } from './TypingIndicator';
+import { OnlineStatus, OnlineDot } from './OnlineStatus';
+import { Phone, Video, MoreVertical, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ChatThreadProps {
@@ -20,12 +23,16 @@ export function ChatThread({ clientUsername }: ChatThreadProps) {
     autoMarkSeen: isSupport,
   });
 
+  // Watch client's presence
+  const { isOnline, isTyping, typingIn, lastSeen } = useWatchPresence(clientUsername);
+  const showTyping = isTyping && typingIn === clientUsername;
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, showTyping]);
 
   const getInitials = (name: string) => {
     return name.slice(0, 2).toUpperCase();
@@ -36,16 +43,19 @@ export function ChatThread({ clientUsername }: ChatThreadProps) {
       {/* Header */}
       <div className="h-16 px-4 flex items-center justify-between bg-card border-b border-border shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <div className="relative w-10 h-10 rounded-full bg-primary flex items-center justify-center">
             <span className="text-sm font-semibold text-primary-foreground">
               {getInitials(clientUsername)}
             </span>
+            <OnlineDot isOnline={isOnline} />
           </div>
           <div>
             <h2 className="font-semibold text-foreground">{clientUsername}</h2>
-            <p className="text-xs text-muted-foreground">
-              {isSupport ? 'Client' : 'Support'}
-            </p>
+            <OnlineStatus 
+              isOnline={isOnline} 
+              lastSeen={lastSeen} 
+              showText={true}
+            />
           </div>
         </div>
 
@@ -84,6 +94,12 @@ export function ChatThread({ clientUsername }: ChatThreadProps) {
               />
             ))
           )}
+          
+          {/* Typing Indicator */}
+          {showTyping && (
+            <TypingIndicator username={clientUsername} />
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </div>
