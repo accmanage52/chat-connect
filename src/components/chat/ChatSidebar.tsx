@@ -1,9 +1,11 @@
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useChatList } from '@/hooks/useChatList';
+import { useWatchPresence } from '@/hooks/usePresence';
 import { ChatPreview } from '@/types/chat';
 import { MessageSquare, LogOut, User, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { OnlineDot } from './OnlineStatus';
 import { cn } from '@/lib/utils';
 
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
@@ -138,6 +140,8 @@ interface ChatListItemProps {
 }
 
 function ChatListItem({ chat, isSelected, onClick, formatTime, currentUser }: ChatListItemProps) {
+  const { isOnline } = useWatchPresence(chat.clientUsername);
+  
   const getInitials = (name: string) => {
     return name.slice(0, 2).toUpperCase();
   };
@@ -152,10 +156,11 @@ function ChatListItem({ chat, isSelected, onClick, formatTime, currentUser }: Ch
         isSelected ? 'bg-sidebar-active' : 'hover:bg-sidebar-hover'
       )}
     >
-      <div className="w-12 h-12 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
+      <div className="relative w-12 h-12 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
         <span className="text-sm font-semibold text-sidebar-text">
           {getInitials(chat.clientUsername)}
         </span>
+        <OnlineDot isOnline={isOnline} />
       </div>
 
       <div className="flex-1 min-w-0">

@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/context/AuthContext';
+import { usePresence, useWatchPresence } from '@/hooks/usePresence';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
+import { TypingIndicator } from './TypingIndicator';
 import { LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -18,11 +20,21 @@ export function ClientChatView() {
     autoMarkSeen: false,
   });
 
+  // Manage own presence
+  const { setTyping } = usePresence({ 
+    username: user?.username || '', 
+    enabled: !!user?.username 
+  });
+
+  // Watch support typing (we'll watch for any support user typing in this chat)
+  // For simplicity, we'll track if support is typing in this client's chat
+  const { isTyping: supportTyping } = useWatchPresence('support');
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, supportTyping]);
 
   useEffect(() => {
     messages.forEach((msg) => {
@@ -31,6 +43,11 @@ export function ClientChatView() {
       }
     });
   }, [messages, user?.username, markAsSeen]);
+
+  // Handle typing indicator
+  const handleTyping = useCallback((isTyping: boolean) => {
+    setTyping(isTyping, user?.username);
+  }, [setTyping, user?.username]);
 
   return (
     <div className="flex flex-col h-screen w-full bg-background">
@@ -89,11 +106,17 @@ export function ClientChatView() {
               />
             ))
           )}
+
+          {/* Typing Indicator from Support */}
+          {supportTyping && (
+            <TypingIndicator username="Support" />
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      <MessageInput onSend={sendMessage} />
+      <MessageInput onSend={sendMessage} onTyping={handleTyping} />
     </div>
   );
 }
