@@ -124,14 +124,26 @@ export function ClientChatView() {
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={logout}
-          className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
-        >
-          <LogOut className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setDepositOpen(true)}
+            className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+          >
+            Deposit
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={logout}
+            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
+        </div>
+
       </div>
 
       {/* Messages Area */}
@@ -167,24 +179,7 @@ export function ClientChatView() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => setDepositOpen(true)}
-        >
-          Deposit
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={logout}
-          className="text-primary-foreground/70 hover:text-primary-foreground"
-        >
-          <LogOut className="w-5 h-5" />
-        </Button>
-      </div>
+      
 
       <DepositModal
         open={depositOpen}
