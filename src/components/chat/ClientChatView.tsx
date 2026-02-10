@@ -5,6 +5,7 @@ import { usePresence, useWatchPresence } from '@/hooks/usePresence';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
+import { DepositModal } from './DepositModal';
 import { LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
