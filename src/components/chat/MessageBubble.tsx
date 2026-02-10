@@ -19,33 +19,59 @@ interface PaymentData {
 }
 
 function PaymentCard({ data, timestamp }: { data: PaymentData; timestamp: any }) {
-  const formatTime = (ts: any) => {
-    if (!ts) return '';
-    const date = ts.toDate();
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatDateTime = (ts: any) => {
+    if (!ts) return { date: '', time: '' };
+    const d = ts.toDate();
+    const date = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return { date, time };
   };
 
+  const { date, time } = formatDateTime(timestamp);
+
   return (
-    <div className="bg-emerald-500/90 text-white rounded-2xl px-4 py-3 shadow-md max-w-[75%]">
-      <div className="flex items-center gap-2 mb-2">
-        <IndianRupee className="w-5 h-5" />
-        <span className="font-semibold text-sm">Deposit Successful</span>
+    <div className="max-w-[80%] rounded-2xl overflow-hidden shadow-lg border border-emerald-500/30">
+      {/* Header */}
+      <div className="bg-emerald-600 px-4 py-2.5 flex items-center gap-2">
+        <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+          <IndianRupee className="w-4 h-4 text-white" />
+        </div>
+        <span className="font-semibold text-sm text-white">Deposit Successful</span>
       </div>
-      <div className="space-y-1 text-sm">
-        <p className="font-bold text-lg">₹{data.amount}</p>
-        {data.clientTxnId && (
-          <p className="text-white/80 text-xs">TxnId: {data.clientTxnId}</p>
-        )}
-        {data.bankTxnId && (
-          <p className="text-white/80 text-xs">UTR: {data.bankTxnId}</p>
-        )}
-        {data.paymentMode && (
-          <p className="text-white/80 text-xs">Mode: {data.paymentMode}</p>
-        )}
+
+      {/* Body */}
+      <div className="bg-emerald-500/90 px-4 py-3 space-y-3">
+        <p className="text-white font-bold text-2xl text-center">₹{data.amount}</p>
+
+        <div className="bg-white/10 rounded-lg px-3 py-2 space-y-1.5">
+          {data.bankTxnId && (
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">UTR</span>
+              <span className="text-white font-medium">{data.bankTxnId}</span>
+            </div>
+          )}
+          {data.clientTxnId && (
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">Txn ID</span>
+              <span className="text-white font-medium text-xs">{data.clientTxnId}</span>
+            </div>
+          )}
+          {data.paymentMode && (
+            <div className="flex justify-between text-sm">
+              <span className="text-white/70">Mode</span>
+              <span className="text-white font-medium">{data.paymentMode}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-sm">
+            <span className="text-white/70">Date</span>
+            <span className="text-white font-medium">{date}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-white/70">Time</span>
+            <span className="text-white font-medium">{time}</span>
+          </div>
+        </div>
       </div>
-      <p className="text-white/60 text-[11px] mt-2 text-right">
-        {formatTime(timestamp)}
-      </p>
     </div>
   );
 }
