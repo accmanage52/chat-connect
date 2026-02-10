@@ -83,19 +83,24 @@ export function MessageBubble({ message, isOwn, showSender = false }: MessageBub
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Check if this is a payment message
-  if ((message as any).type === 'payment') {
+  if (typeof message.text === "string" && message.text.startsWith("{")) {
     try {
-      const paymentData: PaymentData = JSON.parse(message.text);
-      return (
-        <div className={cn('flex message-animate', isOwn ? 'justify-end' : 'justify-start')}>
-          <PaymentCard data={paymentData} timestamp={message.createdAt} />
-        </div>
-      );
+      const parsed = JSON.parse(message.text);
+
+      if (parsed.type === "payment") {
+        const paymentData: PaymentData = parsed;
+
+        return (
+          <div className={cn('flex message-animate', isOwn ? 'justify-end' : 'justify-start')}>
+            <PaymentCard data={paymentData} timestamp={message.createdAt} />
+          </div>
+        );
+      }
     } catch {
-      // fall through to normal rendering
+      // ignore
     }
   }
+
 
   const isSeen = message.seenBy.length > 1;
 
