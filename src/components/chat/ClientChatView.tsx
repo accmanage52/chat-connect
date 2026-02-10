@@ -59,7 +59,7 @@ export function ClientChatView() {
         const { data: fnData } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke(
           'sabpaisa-create-payment',
           { body: { username: payerUsername, amount } }
-          const { data: fnData } = await ...
+        
 
         );
 
