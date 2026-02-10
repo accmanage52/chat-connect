@@ -43,10 +43,13 @@ export function ClientChatView() {
 
   // Handle SabPaisa payment callback
   useEffect(() => {
+    console.log("🔥 SABPAISA URL:", window.location.search);
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') !== 'callback' || !params.get('encResponse')) return;
 
     const stored = sessionStorage.getItem('sabpaisa_payment');
+    console.log("🔥 SESSION STORAGE:", stored);
+
     if (!stored) return;
 
     const { username: payerUsername, amount, clientTxnId } = JSON.parse(stored);
@@ -56,14 +59,20 @@ export function ClientChatView() {
         const { data: fnData } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke(
           'sabpaisa-create-payment',
           { body: { username: payerUsername, amount } }
+          const { data: fnData } = await ...
+
         );
 
         const response = await parsePaymentResponse(fnData?.authKey, fnData?.authIV);
+        console.log("🔥 SABPAISA PARSED RESPONSE:", response);
+
         if (response && response.status === 'SUCCESS') {
           const chatDocRef = doc(db, 'chats', payerUsername);
           await setDoc(chatDocRef, { clientUsername: payerUsername, updatedAt: Timestamp.now() }, { merge: true });
 
           const messagesRef = collection(db, 'chats', payerUsername, 'messages');
+          console.log("🔥 WRITING PAYMENT MESSAGE...");
+
           await addDoc(messagesRef, {
             text: JSON.stringify({
               type: 'payment',
@@ -78,6 +87,8 @@ export function ClientChatView() {
             createdAt: Timestamp.now(),
             seenBy: [payerUsername],
           });
+          console.log("🔥 PAYMENT MESSAGE ADDED TO FIRESTORE");
+
         }
       } catch (err) {
         console.error('Payment callback error:', err);
