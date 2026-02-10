@@ -8,6 +8,9 @@ import { TypingIndicator } from './TypingIndicator';
 import { DepositModal } from './DepositModal';
 import { LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { parsePaymentResponse } from 'sabpaisa-pg-dev';
+import { doc, setDoc, addDoc, collection, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // ⭐ Import your logo image
 import logo from '@/assets/logo.jpeg';
@@ -37,6 +40,53 @@ export function ClientChatView() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, supportTyping]);
+
+  // Handle SabPaisa payment callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') !== 'callback' || !params.get('encResponse')) return;
+
+    const stored = sessionStorage.getItem('sabpaisa_payment');
+    if (!stored) return;
+
+    const { username: payerUsername, amount, clientTxnId } = JSON.parse(stored);
+
+    (async () => {
+      try {
+        const { data: fnData } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke(
+          'sabpaisa-create-payment',
+          { body: { username: payerUsername, amount } }
+        );
+
+        const response = await parsePaymentResponse(fnData?.authKey, fnData?.authIV);
+        if (response && response.status === 'SUCCESS') {
+          const chatDocRef = doc(db, 'chats', payerUsername);
+          await setDoc(chatDocRef, { clientUsername: payerUsername, updatedAt: Timestamp.now() }, { merge: true });
+
+          const messagesRef = collection(db, 'chats', payerUsername, 'messages');
+          await addDoc(messagesRef, {
+            text: JSON.stringify({
+              type: 'payment',
+              amount: response.amount || amount,
+              clientTxnId: response.clientTxnId || clientTxnId,
+              bankTxnId: response.sabpaisaTxnId || '',
+              paymentMode: response.paymentMode || '',
+              status: response.status,
+            }),
+            type: 'payment',
+            user: payerUsername,
+            createdAt: Timestamp.now(),
+            seenBy: [payerUsername],
+          });
+        }
+      } catch (err) {
+        console.error('Payment callback error:', err);
+      } finally {
+        sessionStorage.removeItem('sabpaisa_payment');
+        window.history.replaceState({}, '', '/');
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     messages.forEach((msg) => {
