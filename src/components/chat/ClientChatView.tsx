@@ -135,6 +135,11 @@ export function ClientChatView() {
         </Button>
       </div>
 
+      <DepositModal
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        username={user?.username}
+      />
 
       <MessageInput onSend={sendMessage} onTyping={handleTyping} />
     </div>
